@@ -1,2 +1,2 @@
-# uniswap-rs-sdk
-A Rust SDK to interact with Uniswap and clones
+# traderjoe-rs-sdk
+A Rust SDK to interact with TraderJoe
