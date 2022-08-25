@@ -10,7 +10,7 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn sorts_before(&self, other: Token) -> bool {
+    pub fn sorts_before(&self, other: &Token) -> bool {
         assert_eq!(self.chain_id, other.chain_id);
         assert_ne!(self.address, other.address);
         return self.address.lt(&other.address);
@@ -77,7 +77,7 @@ mod tests {
             U256::from(43114_u64),
         );
 
-        let result = token0.sorts_before(token1);
+        let result = token0.sorts_before(&token1);
         assert_eq!(result, false);
     }
 
@@ -99,7 +99,7 @@ mod tests {
             U256::from(43114_u64),
         );
 
-        let result = token0.sorts_before(token1);
+        let result = token0.sorts_before(&token1);
         assert_eq!(result, true);
     }
 
@@ -122,7 +122,7 @@ mod tests {
             U256::from(43114_u64),
         );
 
-        token0.sorts_before(token1);
+        token0.sorts_before(&token1);
     }
 
     #[tokio::test]
@@ -144,6 +144,6 @@ mod tests {
             U256::from(43114_u64),
         );
 
-        token0.sorts_before(token1);
+        token0.sorts_before(&token1);
     }
 }
