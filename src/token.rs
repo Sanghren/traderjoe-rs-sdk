@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Formatter};
 use ethers::types::{Address, U256};
 
+#[derive(Clone)]
 pub struct Token {
     pub address: Address,
     pub name: String,

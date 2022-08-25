@@ -11,6 +11,8 @@ use crate::token::Token;
 
 pub struct Pair {
     pub address: Address,
+    pub token_0: Token,
+    pub token_1: Token,
     pub name: String,
     pub symbol: String,
     pub decimals: u8,
@@ -98,6 +100,11 @@ impl Pair {
             }
         }
     }
+
+    pub fn involves_token(&self, token: &Token) -> bool {
+        self.token_0.eq(&token) || self.token_1.eq(&token)
+    }
+
 }
 
 #[cfg(test)]

@@ -34,8 +34,8 @@ pub async fn fetch_token_data(
 }
 
 pub async fn fetch_pair_data(
-    token_a: Token,
-    token_b: Token,
+    token_a: &Token,
+    token_b: &Token,
     provider: &Arc<Provider<Ws>>,
 ) -> Result<Pair, Box<dyn Error>> {
     assert_eq!(token_a.chain_id, U256::from(43114_u64));
@@ -51,6 +51,8 @@ pub async fn fetch_pair_data(
 
     Ok(Pair {
         address: pair_address,
+        token_0: token_a.sorts_before(&token_b).then(|| { token_a.clone() }).unwrap_or(token_b.clone()),
+        token_1: token_a.sorts_before(&token_b).then(|| { token_b.clone() }).unwrap_or(token_a.clone()),
         name: "Joe Liquidity".to_string(),
         symbol: "JLP".to_string(),
         decimals: 18,
@@ -144,7 +146,7 @@ mod tests {
             U256::from(43114_u64),
         );
 
-        let result = fetch_pair_data(joe_token, wavax_token, &arc_provider).await;
+        let result = fetch_pair_data(&joe_token, &wavax_token, &arc_provider).await;
         assert_eq!(result.is_err(), false);
         let result = result.unwrap();
         // ToDo WIll have to fix the pinning to a specific block to be more specific in those assertion
@@ -153,6 +155,14 @@ mod tests {
         assert_eq!(
             result.address,
             Address::from_str(JOE_WAVAX_LP_ADDRESS).unwrap()
+        );
+        assert_eq!(
+            result.token_0,
+            joe_token
+        );
+        assert_eq!(
+            result.token_1,
+            wavax_token
         );
     }
 }
