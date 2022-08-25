@@ -1,23 +1,20 @@
-use std::fmt::{Debug, Formatter};
-use ethers::types::{Address, Bytes, U256};
-use std::sync::{LockResult, Mutex};
+use ethers::types::{Address, U256};
+use std::sync::{Mutex};
 use std::collections::HashMap;
-use std::error::Error;
-use std::str::FromStr;
-use ethers::abi;
-use ethers::abi::Token::{Address as TokenAddress, Array, Uint as TokenUint};
+
+
 use ethers::prelude::H160;
-use ethers::types::BlockId::Hash;
-use ethers::utils::{format_bytes32_string, get_create2_address, get_create2_address_from_hash, hex, keccak256};
+
+use ethers::utils::{get_create2_address_from_hash, hex, keccak256};
 use crate::token::Token;
-use hex_literal::hex;
+
 
 pub struct Pair {
     pub address: Address,
     pub name: String,
     pub symbol: String,
     pub decimals: u8,
-    pub reserves: (u128,u128),
+    pub reserves: (u128, u128),
     pub chain_id: U256,
 }
 
@@ -29,10 +26,10 @@ impl Pair {
     pub fn get_address(
         token_0: &Token,
         token_1: &Token,
-        chain_id: U256,
+        _chain_id: U256,
     ) -> H160 {
         let (token0, token1): (Token, Token);
-        if token_0.sorts_before(&token_1) {
+        if token_0.sorts_before(token_1) {
             token0 = Token {
                 address: token_0.address,
                 name: token_0.name.to_string(),
@@ -55,7 +52,6 @@ impl Pair {
                 decimals: token_1.decimals,
                 chain_id: token_1.chain_id,
             };
-            ;
             token1 = Token {
                 address: token_0.address,
                 name: token_0.name.to_string(),
@@ -67,12 +63,7 @@ impl Pair {
 
         match PAIR_ADDRESS_CACHE.lock() {
             Ok(mut map) => {
-                if !map.contains_key(&token0.address) {
-                    map.insert(
-                        token0.address,
-                        HashMap::new(),
-                    );
-                }
+                map.entry(token0.address).or_insert_with(HashMap::new);
 
                 if !map.get(&token0.address).unwrap().contains_key(&token1.address) {
                     map.get_mut(&token0.address).unwrap().insert(
@@ -84,14 +75,14 @@ impl Pair {
                 if map.get(&token0.address).unwrap().contains_key(&token1.address) &&
                     map.get(&token0.address).unwrap().get(&token1.address).unwrap().eq(&Address::zero()) {
                     // ToDo Move those values in a separate files for constants. ALso make it configurable so we can use the sdk on Fuji.
-                    let TRADER_JOE_POOL_INIT_CODE_HASH =
+                    let trader_joe_pool_init_code_hash =
                         hex::decode("0bbca9af0511ad1a1da383135cf3a8d2ac620e549ef9f6ae3a4c33c2fed0af91").unwrap();
                     let factory: Address = "0x9ad6c38be94206ca50bb0d90783181662f0cfa10"
                         .parse()
                         .unwrap();
 
                     let pool_address =
-                        get_create2_address_from_hash(factory, keccak256([token_0.address.0, token_1.address.0].concat()), TRADER_JOE_POOL_INIT_CODE_HASH);
+                        get_create2_address_from_hash(factory, keccak256([token_0.address.0, token_1.address.0].concat()), trader_joe_pool_init_code_hash);
 
                     map.get_mut(
                         &token0.address).unwrap().insert(
@@ -99,7 +90,7 @@ impl Pair {
                         pool_address);
                 }
 
-                map.get(&token0.address).unwrap().get(&token1.address).unwrap().clone()
+                *map.get(&token0.address).unwrap().get(&token1.address).unwrap()
             }
             Err(err) => {
                 eprintln!("Issue while attempting to lock PAIR_ADDRESS_CACHE -> {:?}", err);
@@ -114,13 +105,13 @@ mod tests {
     use std::str::FromStr;
     use ethers::abi::Address;
     use ethers::prelude::U256;
-    use ethers::types::{H160};
+
     use crate::pair::Pair;
     use crate::token::Token;
 
-    static JOE_TOKEN_ADDRESS: &'static str = "0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd";
-    static WAVAX_TOKEN_ADDRESS: &'static str = "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7";
-    static JOE_WAVAX_LP_ADDRESS: &'static str = "0x454e67025631c065d3cfad6d71e6892f74487a15";
+    static JOE_TOKEN_ADDRESS: &str = "0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd";
+    static WAVAX_TOKEN_ADDRESS: &str = "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7";
+    static JOE_WAVAX_LP_ADDRESS: &str = "0x454e67025631c065d3cfad6d71e6892f74487a15";
 
     #[tokio::test]
     async fn it_returns_correct_pair_address() {

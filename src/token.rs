@@ -13,7 +13,7 @@ impl Token {
     pub fn sorts_before(&self, other: &Token) -> bool {
         assert_eq!(self.chain_id, other.chain_id);
         assert_ne!(self.address, other.address);
-        return self.address.lt(&other.address);
+        self.address.lt(&other.address)
     }
 }
 
@@ -39,9 +39,9 @@ mod tests {
     use std::str::FromStr;
     use super::*;
 
-    static JOE_TOKEN_ADDRESS: &'static str = "0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd";
-    static WAVAX_TOKEN_ADDRESS: &'static str = "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7";
-    static USDC_TOKEN_ADDRESS: &'static str = "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e";
+    static JOE_TOKEN_ADDRESS: &str = "0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd";
+    static WAVAX_TOKEN_ADDRESS: &str = "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7";
+    static USDC_TOKEN_ADDRESS: &str = "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e";
 
     fn setup_token(
         address: &str,
