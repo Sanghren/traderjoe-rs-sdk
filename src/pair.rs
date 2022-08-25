@@ -17,6 +17,7 @@ pub struct Pair {
     pub name: String,
     pub symbol: String,
     pub decimals: u8,
+    pub reserves: (u128,u128),
     pub chain_id: U256,
 }
 
