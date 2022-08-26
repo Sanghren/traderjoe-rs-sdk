@@ -12,7 +12,7 @@ impl Fraction {
     }
     
     pub fn remainder(&self) -> Fraction {
-        Fraction{ numerator: self.numerator.mod_floor(&self.denominator), denominator: self.denominator }
+        Fraction{ numerator: self.numerator % &self.denominator, denominator: self.denominator }
     }
 
 }

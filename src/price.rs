@@ -1,17 +1,19 @@
+use std::ops::Mul;
+use crate::fraction::Fraction;
 use crate::route::Route;
 use crate::token::Token;
 
+#[derive(Clone)]
 pub struct Price {
     pub base_currency: Token,
     pub quote_currency: Token,
     pub token_0_reserve: u128,
     pub token_1_reserve: u128,
-    pub price: f64
 }
 
 impl Price {
     pub fn price_from_route(
-        route: Route
+        route: &Route
     ) -> Price {
         let mut prices: Vec<Price> = Vec::new();
 
@@ -19,44 +21,43 @@ impl Price {
             prices.push(
                 route.path.get(i).unwrap().address
                     .eq(&pair.token_0.address)
-                    .then(Price {
+                    .then(|| Price {
                         base_currency: pair.token_0.clone(),
                         quote_currency: pair.token_1.clone(),
                         token_0_reserve: pair.reserves.0,
                         token_1_reserve: pair.reserves.1,
-                        price: 0.
                     })
                     .unwrap_or(Price {
                         base_currency: pair.token_1.clone(),
                         quote_currency: pair.token_0.clone(),
                         token_0_reserve: pair.reserves.1,
                         token_1_reserve: pair.reserves.0,
-                        price: 0.
                     })
             )
         });
 
-        let reserve0_with_decimals = (reserves.0 as f64 / (10_u64.pow(token0_decimals.into())) as f64) as f64;
-        let reserve1_with_decimals = (reserves.1 as f64 / (10_u64.pow(token1_decimals.into())) as f64) as f64;
+        let price = prices.iter().reduce(|acc, curr|
+            &acc.multiply(curr)
+        ).unwrap();
 
-        prices.slice(1).iter().reduce(|acc, curr| {
-
-        });
-
-        Price {
-            base_currency: Token {},
-            quote_currency: Token {},
-            token_0_reserve: 0,
-            token_1_reserve: 0,
-            price: 0.
-        }
+        *price
     }
 
     pub fn multiply(
         &self,
-        other: Price
+        other: &Price,
     ) -> Price {
-        assert_eq!(self.quote_currency.eq(&other.base_currency), "Mismatch in the token of price");
-        let fraction =
+        assert_eq!(self.quote_currency.eq(&other.base_currency), true, "Mismatch in the token of price");
+        let fraction = Fraction {
+            numerator: self.token_0_reserve.mul(other.token_0_reserve),
+            denominator: self.token_1_reserve.mul(other.token_1_reserve),
+        };
+
+        Price {
+            base_currency: self.base_currency.clone(),
+            quote_currency: self.quote_currency.clone(),
+            token_0_reserve: fraction.denominator,
+            token_1_reserve: fraction.numerator,
+        }
     }
 }

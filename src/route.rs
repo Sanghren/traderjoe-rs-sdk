@@ -4,6 +4,7 @@ use crate::pair::Pair;
 use crate::price::Price;
 use crate::token::Token;
 
+#[derive(Clone)]
 pub struct Route {
     pub pairs: Vec<Pair>,
     pub path: Vec<Token>,
@@ -32,11 +33,33 @@ impl Route {
             path.push(output);
         });
 
-        Route {
+        let mut route = Route {
             pairs,
             path: vec![],
             input,
             output,
-        }
+            mid_price: Price{
+                base_currency: Token {
+                    address: Default::default(),
+                    name: "".to_string(),
+                    symbol: "".to_string(),
+                    decimals: 0,
+                    chain_id: Default::default()
+                },
+                quote_currency: Token {
+                    address: Default::default(),
+                    name: "".to_string(),
+                    symbol: "".to_string(),
+                    decimals: 0,
+                    chain_id: Default::default()
+                },
+                token_0_reserve: 0,
+                token_1_reserve: 0
+            }
+        };
+
+        route.mid_price = Price::price_from_route(&route);
+
+        route.clone()
     }
 }
