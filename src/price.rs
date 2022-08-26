@@ -36,11 +36,9 @@ impl Price {
             )
         });
 
-        let price = prices.iter().reduce(|acc, curr|
-            &acc.multiply(curr)
-        ).unwrap();
-
-        *price
+        prices.into_iter().reduce(|acc, curr|
+            acc.multiply(&curr)
+        ).unwrap().clone()
     }
 
     pub fn multiply(

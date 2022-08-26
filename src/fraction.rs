@@ -14,5 +14,4 @@ impl Fraction {
     pub fn remainder(&self) -> Fraction {
         Fraction{ numerator: self.numerator % &self.denominator, denominator: self.denominator }
     }
-
 }
