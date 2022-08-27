@@ -56,7 +56,7 @@ pub async fn fetch_pair_data(
         name: "Joe Liquidity".to_string(),
         symbol: "JLP".to_string(),
         decimals: 18,
-        reserves: (reserves.0, reserves.1),
+        reserves: (reserves.0 as i128, reserves.1 as i128),
         chain_id: provider.get_chainid().await.unwrap(),
     })
 }

@@ -1,4 +1,5 @@
 use std::ops::Mul;
+use ethers::prelude::U256;
 use crate::fraction::Fraction;
 use crate::route::Route;
 use crate::token::Token;
@@ -7,8 +8,8 @@ use crate::token::Token;
 pub struct Price {
     pub base_currency: Token,
     pub quote_currency: Token,
-    pub token_0_reserve: u128,
-    pub token_1_reserve: u128,
+    pub scalar: Fraction,
+    pub fraction: Fraction
 }
 
 impl Price {
@@ -24,14 +25,14 @@ impl Price {
                     .then(|| Price {
                         base_currency: pair.token_0.clone(),
                         quote_currency: pair.token_1.clone(),
-                        token_0_reserve: pair.reserves.0,
-                        token_1_reserve: pair.reserves.1,
+                        scalar: Fraction { numerator: 0, denominator: 0 },
+                        fraction: Fraction { numerator: 0, denominator: 0 }
                     })
                     .unwrap_or(Price {
                         base_currency: pair.token_1.clone(),
                         quote_currency: pair.token_0.clone(),
-                        token_0_reserve: pair.reserves.1,
-                        token_1_reserve: pair.reserves.0,
+                        scalar: Fraction { numerator: 0, denominator: 0 },
+                        fraction: Fraction { numerator: 0, denominator: 0 }
                     })
             )
         });
@@ -46,16 +47,14 @@ impl Price {
         other: &Price,
     ) -> Price {
         assert_eq!(self.quote_currency.eq(&other.base_currency), true, "Mismatch in the token of price");
-        let fraction = Fraction {
-            numerator: self.token_0_reserve.mul(other.token_0_reserve),
-            denominator: self.token_1_reserve.mul(other.token_1_reserve),
-        };
+        let fraction = self.fraction.multiply(&other.fraction);
+
 
         Price {
             base_currency: self.base_currency.clone(),
             quote_currency: self.quote_currency.clone(),
-            token_0_reserve: fraction.denominator,
-            token_1_reserve: fraction.numerator,
+            scalar: self.scalar.clone(),
+            fraction
         }
     }
 }

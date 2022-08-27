@@ -9,7 +9,6 @@ use ethers::utils::{get_create2_address_from_hash, hex, keccak256};
 use crate::token::Token;
 
 
-#[derive(Clone)]
 pub struct Pair {
     pub address: Address,
     pub token_0: Token,
@@ -17,7 +16,7 @@ pub struct Pair {
     pub name: String,
     pub symbol: String,
     pub decimals: u8,
-    pub reserves: (u128, u128),
+    pub reserves: (i128, i128),
     pub chain_id: U256,
 }
 
